@@ -61,5 +61,13 @@ async function sendMessage(recipientId, text) {
 
 app.get("/", (req, res) => res.send("Facebook AI Bot is running!"));
 
+app.get("/", (req, res) => res.send("Facebook AI Bot is running!"));
+app.get("/health", (req, res) => res.send("OK"));
+
 const PORT = process.env.PORT || 8080;
-app.listen(PORT, '0.0.0.0', () => console.log(`Bot running on port ${PORT}`));
+app.listen(PORT, '0.0.0.0', () => {
+  console.log(`Bot running on port ${PORT}`);
+  setInterval(() => {
+    require('https').get('https://fb-ai-bot-production-718e.up.railway.app/health');
+  }, 14 * 60 * 1000);
+});
