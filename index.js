@@ -6,7 +6,7 @@ app.use(express.json());
 
 const VERIFY_TOKEN = process.env.VERIFY_TOKEN || "my_verify_token_123";
 const PAGE_ACCESS_TOKEN = process.env.PAGE_ACCESS_TOKEN;
-const ANTHROPIC_API_KEY = process.env.ANTHROPIC_API_KEY;
+const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
 
 const SYSTEM_PROMPT = process.env.SYSTEM_PROMPT ||
   "أنت مساعد ذكي لصفحة فيسبوك. ردودك قصيرة وودودة ومفيدة باللغة العربية. رد على رسائل العملاء بشكل احترافي ومتعاطف. لا تزيد عن 3 جمل في ردك.";
@@ -43,22 +43,13 @@ app.post("/webhook", async (req, res) => {
 
 async function getAIReply(userMessage) {
   const response = await axios.post(
-    "https://api.anthropic.com/v1/messages",
+    `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`,
     {
-      model: "claude-sonnet-4-20250514",
-      max_tokens: 500,
-      system: SYSTEM_PROMPT,
-      messages: [{ role: "user", content: userMessage }],
-    },
-    {
-      headers: {
-        "x-api-key": ANTHROPIC_API_KEY,
-        "anthropic-version": "2023-06-01",
-        "Content-Type": "application/json",
-      },
+      system_instruction: { parts: [{ text: SYSTEM_PROMPT }] },
+      contents: [{ parts: [{ text: userMessage }] }]
     }
   );
-  return response.data.content[0].text;
+  return response.data.candidates[0].content.parts[0].text;
 }
 
 async function sendMessage(recipientId, text) {
